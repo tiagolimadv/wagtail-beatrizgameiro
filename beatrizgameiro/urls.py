@@ -14,6 +14,7 @@ urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
+    path("comments/", include("django_comments.urls")),
     path("sitemap.xml", sitemap),
     path("robots.txt", blog.views.RobotsView.as_view()),
 ]

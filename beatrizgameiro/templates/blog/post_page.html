@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load wagtailcore_tags wagtailimages_tags blogapp_tags static wagtailmetadata_tags %}
+{% load wagtailcore_tags wagtailimages_tags blogapp_tags static wagtailmetadata_tags comments %}
 
 {% block meta_tag %}
 	{% meta_tags %}
@@ -24,5 +24,12 @@
 
 	{% post_tags_list %}
 	<hr>
+
+	<div class="mb-4">
+		{% render_comment_list for page %}
+	</div>
+	<div class="mb-4">
+		{% render_comment_form for page %}
+	</div>
 
 {% endblock content %}
