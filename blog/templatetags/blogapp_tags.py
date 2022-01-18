@@ -2,6 +2,7 @@ from blog.models import BlogCategory, Tag
 from django.template import Library, loader
 from urllib.parse import urlparse, urlunparse
 from django.http import QueryDict
+from blog.md_converter.utils import render_markdown
 
 
 register = Library()
@@ -71,3 +72,8 @@ def post_page_date_slug_url(post_page, blog_page):
     )
 
     return url
+
+
+@register.filter(name="markdown")
+def markdown(value):
+    return render_markdown(value)

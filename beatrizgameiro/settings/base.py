@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "modelcluster",
     "taggit",
     "django_extensions",
+    "wagtailmarkdown",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

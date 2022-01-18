@@ -20,6 +20,7 @@ from wagtail.embeds.blocks import EmbedBlock
 from wagtail.images.api.fields import ImageRenditionField
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.snippets.blocks import SnippetChooserBlock
+from wagtailmarkdown.blocks import MarkdownBlock
 
 
 class ImageText(StructBlock):
@@ -32,6 +33,7 @@ class BodyBlock(StreamBlock):
     h1 = CharBlock()
     h2 = CharBlock()
     paragraph = RichTextBlock()
+    markdown = MarkdownBlock(icon="code")
 
     image_text = ImageText()
     image_carousel = ListBlock(ImageChooserBlock())
