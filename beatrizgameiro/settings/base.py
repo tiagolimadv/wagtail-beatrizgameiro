@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "wagtailmarkdown",
     "webpack_boilerplate",
+    "wagtailmetadata",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

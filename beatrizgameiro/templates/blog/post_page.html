@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
-{% load wagtailcore_tags wagtailimages_tags blogapp_tags static %}
+{% load wagtailcore_tags wagtailimages_tags blogapp_tags static wagtailmetadata_tags %}
+
+{% block meta_tag %}
+	{% meta_tags %}
+{% endblock meta_tag %}
 
 {% block extra_css %}
 	<link rel="stylesheet" type="text/css" href="{% static "css/code_theme.css" %}" />

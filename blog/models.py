@@ -22,6 +22,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404
 from django.utils.functional import cached_property
 from wagtail.search import index
+from wagtailmetadata.models import MetadataPageMixin
 import datetime
 
 
@@ -109,7 +110,7 @@ class BlogPage(RoutablePageMixin, Page):
         return self.render(request)
 
 
-class PostPage(Page):
+class PostPage(MetadataPageMixin, Page):
     header_image = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
