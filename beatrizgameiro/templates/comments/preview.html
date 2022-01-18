@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% load comments crispy_forms_tags %}
+
+{% block meta_tag %}
+	<title>Postar um comentário</title>
+{% endblock meta_tag %}
+
+{% block content %}
+	{% include "comments/form.html" %}
+{% endblock content %}
