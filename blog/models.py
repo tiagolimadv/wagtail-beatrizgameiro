@@ -19,6 +19,9 @@ from wagtail.core.fields import StreamField
 from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from .blocks import BodyBlock
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.http import Http404
+from django.utils.functional import cached_property
+import datetime
 
 
 class BlogPage(RoutablePageMixin, Page):
@@ -46,7 +49,7 @@ class BlogPage(RoutablePageMixin, Page):
         return context
 
     def get_posts(self):
-        return PostPage.objects.descendant_of(self).live()
+        return PostPage.objects.descendant_of(self).live().order_by("-post_date")
 
     @route(r"^tag/(?P<tag>[-\w]+)/$")
     def post_by_tag(self, request, tag, *args, **kwargs):
@@ -63,6 +66,25 @@ class BlogPage(RoutablePageMixin, Page):
         self.posts = self.get_posts()
         return self.render(request)
 
+    @route(r"^(\d{4})/$")
+    @route(r"^(\d{4})/(\d{2})/$")
+    @route(r"^(\d{4})/(\d{2})/(\d{2})/$")
+    def post_by_date(self, request, year, month=None, day=None, *args, **kwargs):
+        self.posts = self.get_posts().filter(post_date__year=year)
+        if month:
+            self.posts = self.posts.filter(post_date__month=month)
+        if day:
+            self.posts = self.posts.filter(post_date__day=day)
+        return self.render(request)
+
+    @route(r"^(\d{4})/(\d{2})/(\d{2})/(.+)/$")
+    def post_by_date_slug(self, request, year, month, day, slug, *args, **kwargs):
+        post_page = self.get_posts().filter(slug=slug).first()
+        if not post_page:
+            raise Http404
+
+        return post_page.serve(request)
+
 
 class PostPage(Page):
     header_image = models.ForeignKey(
@@ -77,6 +99,14 @@ class PostPage(Page):
 
     tags = ClusterTaggableManager(through="blog.PostPageTag", blank=True)
 
+    post_date = models.DateTimeField(
+        verbose_name="Post date", default=datetime.datetime.today
+    )
+
+    settings_panels = Page.settings_panels + [
+        FieldPanel("post_date"),
+    ]
+
     content_panels = Page.content_panels + [
         ImageChooserPanel("header_image"),
         InlinePanel("categories", label="category"),
@@ -88,6 +118,13 @@ class PostPage(Page):
         context = super().get_context(request, *args, **kwargs)
         context["blog_page"] = self.get_parent().specific
         return context
+
+    @cached_property
+    def canonical_url(self):
+        from blog.templatetags.blogapp_tags import post_page_date_slug_url
+
+        blog_page = self.get_parent().specific
+        return post_page_date_slug_url(self, blog_page)
 
 
 class PostPageBlogCategory(models.Model):
