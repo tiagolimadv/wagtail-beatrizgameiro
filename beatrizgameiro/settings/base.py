@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.routable_page",
+    "wagtail.contrib.postgres_search",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -121,9 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pt-Br"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
@@ -164,7 +165,7 @@ WAGTAIL_SITE_NAME = "beatrizgameiro"
 # https://docs.wagtail.io/en/stable/topics/search/backends.html
 WAGTAILSEARCH_BACKENDS = {
     "default": {
-        "BACKEND": "wagtail.search.backends.database",
+        "BACKEND": "wagtail.contrib.postgres_search.backend",
     }
 }
 

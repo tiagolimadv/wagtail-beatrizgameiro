@@ -21,6 +21,7 @@ from .blocks import BodyBlock
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404
 from django.utils.functional import cached_property
+from wagtail.search import index
 import datetime
 
 
@@ -53,11 +54,15 @@ class BlogPage(RoutablePageMixin, Page):
 
     @route(r"^tag/(?P<tag>[-\w]+)/$")
     def post_by_tag(self, request, tag, *args, **kwargs):
+        self.filter_type = "tag"
+        self.filter_term = tag
         self.posts = self.get_posts().filter(tags__slug=tag)
         return self.render(request)
 
     @route(r"^category/(?P<category>[-\w]+)/$")
     def post_by_category(self, request, category, *args, **kwargs):
+        self.filter_type = "category"
+        self.filter_term = category
         self.posts = self.get_posts().filter(categories__blog_category__slug=category)
         return self.render(request)
 
@@ -70,10 +75,17 @@ class BlogPage(RoutablePageMixin, Page):
     @route(r"^(\d{4})/(\d{2})/$")
     @route(r"^(\d{4})/(\d{2})/(\d{2})/$")
     def post_by_date(self, request, year, month=None, day=None, *args, **kwargs):
+        self.filter_type = "date"
+        self.filter_term = year
         self.posts = self.get_posts().filter(post_date__year=year)
         if month:
+            df = DateFormat(datetime.date(int(year), int(month), 1))
+            self.filter_term = df.format("F Y")
             self.posts = self.posts.filter(post_date__month=month)
         if day:
+            self.filter_term = date_format(
+                datetime.date(int(year), int(month), int(day))
+            )
             self.posts = self.posts.filter(post_date__day=day)
         return self.render(request)
 
@@ -84,6 +96,17 @@ class BlogPage(RoutablePageMixin, Page):
             raise Http404
 
         return post_page.serve(request)
+
+    @route(r"^search/$")
+    def post_search(self, request, *args, **kwargs):
+        search_query = request.GET.get("q", None)
+        self.posts = self.get_posts()
+        if search_query:
+            self.filter_term = search_query
+            self.filter_type = "search"
+            self.posts = self.posts.search(search_query)
+
+        return self.render(request)
 
 
 class PostPage(Page):
@@ -102,6 +125,11 @@ class PostPage(Page):
     post_date = models.DateTimeField(
         verbose_name="Post date", default=datetime.datetime.today
     )
+
+    search_fields = Page.search_fields + [
+        index.SearchField("title"),
+        index.SearchField("body"),
+    ]
 
     settings_panels = Page.settings_panels + [
         FieldPanel("post_date"),
