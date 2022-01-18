@@ -18,6 +18,7 @@ from wagtail.snippets.models import register_snippet
 from wagtail.core.fields import StreamField
 from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from .blocks import BodyBlock
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 
 class BlogPage(RoutablePageMixin, Page):
@@ -29,9 +30,19 @@ class BlogPage(RoutablePageMixin, Page):
     content_panels = Page.content_panels + [FieldPanel("description", classname="full")]
 
     def get_context(self, request, *args, **kwargs):
-        context = super(BlogPage, self).get_context(request, *args, **kwargs)
+        context = super().get_context(request, *args, **kwargs)
         context["blog_page"] = self
-        context["posts"] = self.posts
+
+        paginator = Paginator(self.posts, 2)
+        page = request.GET.get("page")
+        try:
+            posts = paginator.page(page)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.object_list.none()
+
+        context["posts"] = posts
         return context
 
     def get_posts(self):

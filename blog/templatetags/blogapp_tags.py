@@ -1,5 +1,7 @@
 from blog.models import BlogCategory, Tag
 from django.template import Library, loader
+from urllib.parse import urlparse, urlunparse
+from django.http import QueryDict
 
 
 register = Library()
@@ -43,3 +45,13 @@ def post_tags_list(context):
         "request": context["request"],
         "post_tags": post_tags,
     }
+
+
+@register.simple_tag
+def url_replace(request, **kwargs):
+    (scheme, netloc, path, params, query, fragment) = urlparse(request.get_full_path())
+    query_dict = QueryDict(query, mutable=True)
+    for key, value in kwargs.items():
+        query_dict[key] = value
+    query = query_dict.urlencode()
+    return urlunparse(scheme, netloc, path, params, query, fragment)
