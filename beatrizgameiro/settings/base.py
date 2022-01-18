@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "wagtailcaptcha",
     "wagtailmenus",
     "django_comments",
-    "custom_comments",
+    "custom_comments.apps.CustomCommentsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
