@@ -46,6 +46,10 @@ INSTALLED_APPS = [
     "wagtailmarkdown",
     "webpack_boilerplate",
     "wagtailmetadata",
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "captcha",
+    "wagtailcaptcha",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -182,3 +186,6 @@ WAGTAILSEARCH_BACKENDS = {
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 BASE_URL = "http://example.com"
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

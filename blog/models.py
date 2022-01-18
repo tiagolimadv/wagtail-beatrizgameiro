@@ -1,6 +1,11 @@
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
+from django.http import Http404
+from django.utils.functional import cached_property
+
 from modelcluster.fields import ParentalKey
 from modelcluster.tags import ClusterTaggableManager
+
 from taggit.models import Tag as TaggitTag
 from taggit.models import TaggedItemBase
 from wagtail.admin.edit_handlers import (
@@ -11,19 +16,54 @@ from wagtail.admin.edit_handlers import (
     PageChooserPanel,
     StreamFieldPanel,
 )
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
+from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
+from wagtail.core.fields import StreamField, RichTextField
 from wagtail.core.models import Page
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
-from wagtail.core.fields import StreamField
-from wagtail.contrib.routable_page.models import RoutablePageMixin, route
-from .blocks import BodyBlock
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.http import Http404
-from django.utils.functional import cached_property
 from wagtail.search import index
+
+from wagtailcaptcha.models import WagtailCaptchaEmailForm
 from wagtailmetadata.models import MetadataPageMixin
+
+from .blocks import BodyBlock
 import datetime
+
+
+class FormField(AbstractFormField):
+    page = ParentalKey("FormPage", on_delete=models.CASCADE, related_name="form_fields")
+
+
+class FormPage(WagtailCaptchaEmailForm):
+    thank_you_text = RichTextField(blank=True)
+
+    content_panels = AbstractEmailForm.content_panels + [
+        InlinePanel("form_fields", label="Form fields"),
+        FieldPanel("thank_you_text", classname="full"),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel("from_address", classname="col6"),
+                        FieldPanel("to_address", classname="col6"),
+                    ]
+                ),
+                FieldPanel("subject"),
+            ],
+            "Email Notification Config",
+        ),
+    ]
+
+    @cached_property
+    def blog_page(self):
+        return self.get_parent().specific
+
+    def get_context(self, request, *args, **kwargs):
+        context = super(FormPage, self).get_context(request, *args, **kwargs)
+
+        return context
 
 
 class BlogPage(RoutablePageMixin, Page):
