@@ -36,7 +36,6 @@ class BlogPage(RoutablePageMixin, Page):
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
-        context["blog_page"] = self
 
         paginator = Paginator(self.posts, 2)
         page = request.GET.get("page")
@@ -109,6 +108,25 @@ class BlogPage(RoutablePageMixin, Page):
 
         return self.render(request)
 
+    def get_sitemap_urls(self, request=None):
+        output = []
+        posts = self.get_posts()
+        for post in posts:
+            post_date = post.post_date
+            url = self.get_full_url(request) + self.reverse_subpage(
+                "post_by_date_slug",
+                args=(
+                    post_date.year,
+                    "{0:02}".format(post_date.month),
+                    "{0:02}".format(post_date.day),
+                    post.slug,
+                ),
+            )
+
+            output.append({"location": url, "lastmod": post.last_published_at})
+
+        return output
+
 
 class PostPage(MetadataPageMixin, Page):
     header_image = models.ForeignKey(
@@ -145,7 +163,6 @@ class PostPage(MetadataPageMixin, Page):
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
-        context["blog_page"] = self.get_parent().specific
         return context
 
     @cached_property
@@ -154,6 +171,9 @@ class PostPage(MetadataPageMixin, Page):
 
         blog_page = self.get_parent().specific
         return post_page_date_slug_url(self, blog_page)
+
+    def get_sitemap_urls(self, request=None):
+        return []
 
 
 class PostPageBlogCategory(models.Model):
